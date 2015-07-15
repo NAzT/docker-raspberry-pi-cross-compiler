@@ -22,28 +22,40 @@ ENV AS=${CROSS_COMPILE}as \
 # 3. Extract only the toolchain we will be using.
 # 4. Create rpxc- prefixed symlinks in /usr/local/bin (eg. rpxc-gcc, rpxc-ld)
 WORKDIR /rpxc
-RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        automake \
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        automake \ 
+        curl \ 
+        ;
+
+RUN curl -s -L https://github.com/raspberrypi/tools/tarball/master | \
+        tar --strip-components 1 -xzf -
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         bc \
         bison \
         cmake \
+        build-essential\
         curl \
         flex \
         lib32stdc++6 \
         lib32z1 \
         ncurses-dev \
-        runit \
- &&  curl -s -L https://github.com/raspberrypi/tools/tarball/master \
-     | tar --wildcards --strip-components 2 -xzf - "*/arm-bcm2708/$TOOLCHAIN/" \
- && mkdir -p /usr/local/bin \
- && for i in ${CROSS_COMPILE}*; do \
-        ln -sf $i /usr/local/bin/rpxc-${i#$CROSS_COMPILE}; \
-    done \
- ;
+        perl \
+        ;
+
+
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        git \
+        sed \
+				cmake-curses-gui \
+        libgl1-mesa-dev \
+        ;
+
 
 WORKDIR /build
-ENTRYPOINT ["/rpxc/entrypoint.sh"]
+ENTRYPOINT [ "/rpxc/entrypoint.sh" ]
 
 COPY imagefiles/entrypoint.sh imagefiles/rpxc /rpxc/
-
